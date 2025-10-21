@@ -54,12 +54,17 @@ export const CustomDragLayer: React.FC = () => {
         id: draggedItem.id,
         title: draggedItem.title,
         number: draggedItem.number,
+        addess: draggedItem.address,
         assignedEmployeeIds: [],
       };
 
       return (
         <JobItem
-          job={tempJob} // <-- Usa el objeto simulado o busca el objeto completo
+          key={tempJob.id}
+          id={tempJob.id}
+          number={tempJob.number}
+          title={tempJob.title} // <-- Usa el objeto simulado o busca el objeto completo
+          assigned={tempJob.assignedEmployeeIds.length}
           isActive={false}
           isDraggingPreview={true} // <-- Nuevo prop que debes añadir a JobItemProps
         />

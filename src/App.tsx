@@ -516,7 +516,7 @@ function App() {
         >
           <img
             style={{ width: "250px" }}
-            src="../src/assets/hmbLogo.png"
+            src="./src/assets/hmbLogo.png"
             alt=""
           />
         </div>
