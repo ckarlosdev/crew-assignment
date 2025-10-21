@@ -1,0 +1,33 @@
+/* Estilos por defecto (Escritorio o Tablet Grande) */
+.job-list-container {
+  width: 25%;
+}
+.assignment-container-main {
+  width: 45%;
+}
+.employee-list-container {
+  width: 25%;
+}
+
+/* --- Media Query para Móviles (Menos de 600px) --- */
+@media (max-width: 600px) {
+  /* Cambiar el flujo a columna */
+  .App > div {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Espacio entre secciones */
+  }
+
+  /* Todos los contenedores ocupan el ancho completo */
+  .job-list-container,
+  .assignment-container-main,
+  .employee-list-container {
+    width: 95%;
+    /* Asegurar que el contenido interno de las listas se vea bien */
+    max-width: 95vw;
+  }
+
+  /* Opcional: Ocultar listas que no se necesitan inmediatamente 
+       En un flujo de D&D vertical, probablemente necesites que las tres zonas 
+       estén visibles, pero se apilan verticalmente: Jobs, Centro, Employees. */
+}
