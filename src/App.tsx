@@ -16,6 +16,7 @@ import { MultiBackend } from "react-dnd-multi-backend";
 import { CustomDragLayer } from "./CustomDragLayer";
 import "./styles/App.css";
 import useHttpsData from "./hooks/useHttpsData";
+import hmbLogo from "./assets/hmbLogo.png";
 import {
   searchAssignmentsURL,
   searchAssignURL,
@@ -217,10 +218,12 @@ function App() {
   };
 
   useEffect(() => {
-    const newStartDateObject = new Date(startDate + "T00:00:00");
-    newStartDateObject.setDate(newStartDateObject.getDate() + 6);
-    const newEndDateString = formatDateToString(newStartDateObject);
-    setEndDate(newEndDateString);
+    if (assignmentId == 0) {
+      const newStartDateObject = new Date(startDate + "T00:00:00");
+      newStartDateObject.setDate(newStartDateObject.getDate() + 6);
+      const newEndDateString = formatDateToString(newStartDateObject);
+      setEndDate(newEndDateString);
+    }
   }, [startDate]);
 
   const handleEndDateChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -375,39 +378,79 @@ function App() {
   );
 
   // Esta función se pasará a AssignmentContainer
+  // const handleAssignEmployee = useCallback(
+  //   (employeeId: number, jobId: number) => {
+  //     // --- 1. ACTUALIZAR EL ESTADO DEL JOB (Añadir el Empleado) ---
+  //     setJobs((prevJobs) => {
+  //       return prevJobs.map((job) => {
+  //         // Si encontramos el job que recibió la asignación
+  //         if (job.id === jobId) {
+  //           // Evitar duplicados: solo agregamos si el ID NO está ya en la lista
+  //           if (!job.assignedEmployeeIds.includes(employeeId)) {
+  //             return {
+  //               ...job,
+  //               // Crear un nuevo array con el nuevo empleado
+  //               assignedEmployeeIds: [...job.assignedEmployeeIds, employeeId],
+  //             };
+  //           }
+  //         }
+  //         // Devolver el job sin cambios si no es el objetivo o si ya estaba asignado
+  //         return job;
+  //       });
+  //     });
+
+  //     // --- 2. ACTUALIZAR EL ESTADO DEL EMPLOYEE (Cambiar el Status) ---
+  //     setEmployees((prevEmployees) => {
+  //       return prevEmployees.map((employee) => {
+  //         // Si encontramos el empleado que fue asignado
+  //         if (employee.id === employeeId) {
+  //           return {
+  //             ...employee,
+  //             // Cambiar su estado a 'assigned'
+  //             status: "assigned",
+  //           };
+  //         }
+  //         // Devolver el empleado sin cambios
+  //         return employee;
+  //       });
+  //     });
+  //   },
+  //   []
+  // );
+
   const handleAssignEmployee = useCallback(
     (employeeId: number, jobId: number) => {
-      // --- 1. ACTUALIZAR EL ESTADO DEL JOB (Añadir el Empleado) ---
       setJobs((prevJobs) => {
         return prevJobs.map((job) => {
-          // Si encontramos el job que recibió la asignación
+          if (job.assignedEmployeeIds.includes(employeeId)) {
+            return {
+              ...job,
+              assignedEmployeeIds: job.assignedEmployeeIds.filter(
+                (id) => id !== employeeId
+              ),
+            };
+          }
+
           if (job.id === jobId) {
-            // Evitar duplicados: solo agregamos si el ID NO está ya en la lista
             if (!job.assignedEmployeeIds.includes(employeeId)) {
               return {
                 ...job,
-                // Crear un nuevo array con el nuevo empleado
                 assignedEmployeeIds: [...job.assignedEmployeeIds, employeeId],
               };
             }
           }
-          // Devolver el job sin cambios si no es el objetivo o si ya estaba asignado
+
           return job;
         });
       });
-
-      // --- 2. ACTUALIZAR EL ESTADO DEL EMPLOYEE (Cambiar el Status) ---
       setEmployees((prevEmployees) => {
         return prevEmployees.map((employee) => {
-          // Si encontramos el empleado que fue asignado
           if (employee.id === employeeId) {
             return {
               ...employee,
-              // Cambiar su estado a 'assigned'
               status: "assigned",
             };
           }
-          // Devolver el empleado sin cambios
           return employee;
         });
       });
@@ -474,6 +517,8 @@ function App() {
           assignmentJobCreateDtoList: jobslist,
         };
 
+        console.log(data);
+
         let result: Assignment | undefined;
         if (action === "new") {
           result = await submitAssignment(submitAssignmentURL(), data);
@@ -485,7 +530,7 @@ function App() {
           setAssignmentId(result?.assignmentsId);
           if (action === "new") {
             setAssignments((prev) => {
-              return [...prev, result];
+              return [result, ...prev];
             });
           }
         }
@@ -497,6 +542,17 @@ function App() {
     } else {
       alert("Select a job.");
     }
+  };
+
+  const phoneNumber = "+523321543415";
+  const messageText =
+    "¡Hello! Please review the jobs assignment: https://ckarlosdev.github.io/assignment-labor-view/?assigmentsId=" +
+    { assignmentId };
+
+  const handleSendSms = () => {
+    const encodedMessage = encodeURIComponent(messageText);
+    const smsLink = `sms:${phoneNumber}?body=${encodedMessage}`;
+    window.location.href = smsLink;
   };
 
   // console.log(jobs);
@@ -514,11 +570,7 @@ function App() {
             marginBottom: "10px",
           }}
         >
-          <img
-            style={{ width: "250px" }}
-            src="./src/assets/hmbLogo.png"
-            alt=""
-          />
+          <img style={{ width: "250px" }} src={hmbLogo} alt="" />
         </div>
         <div style={{ textAlign: "center", marginBottom: "10px" }}>
           <input
@@ -595,6 +647,19 @@ function App() {
                 onClick={handleShow}
               >
                 List
+              </button>
+              <button
+                style={{
+                  width: "100px",
+                  height: "40px",
+                  marginBottom: "10px",
+                  fontWeight: "bold",
+                  fontSize: "18px",
+                  borderRadius: "10px",
+                }}
+                onClick={handleSendSms}
+              >
+                SMS
               </button>
               <h2 style={{ textAlign: "center", margin: "0" }}>
                 Assignment Zone

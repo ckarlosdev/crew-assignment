@@ -57,7 +57,8 @@ export const JobItem: React.FC<JobItemProps> = ({
       title={number && title ? undefined : "Datos no listos"}
     >
       <span style={{ fontWeight: "bold" }}>
-        #{number ?? "..."} {title ?? "..."}
+        #{number ?? "..."}{" "}
+        {title ?? "..."}
       </span>{" "}
       ({assigned ?? "..."})
     </div>
