@@ -24,7 +24,7 @@ export const CustomDragLayer: React.FC = () => {
       itemType: monitor.getItemType(), // El tipo de elemento ('job' o 'employee')
       currentOffset: monitor.getClientOffset(), // Posición actual del cursor
       isDragging: monitor.isDragging(), // true si algo se está arrastrando
-    })
+    }),
   );
 
   if (!isDragging || !currentOffset) {
@@ -54,7 +54,9 @@ export const CustomDragLayer: React.FC = () => {
         id: draggedItem.id,
         title: draggedItem.title,
         number: draggedItem.number,
-        addess: draggedItem.address,
+        address: draggedItem.address,
+        startTime: "",
+        assignmentComment: "",
         assignedEmployeeIds: [],
       };
 
@@ -67,6 +69,7 @@ export const CustomDragLayer: React.FC = () => {
           assigned={tempJob.assignedEmployeeIds.length}
           isActive={false}
           isDraggingPreview={true} // <-- Nuevo prop que debes añadir a JobItemProps
+          address={tempJob.address}
         />
       );
     }

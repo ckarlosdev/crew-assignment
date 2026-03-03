@@ -9,6 +9,7 @@ type AssignmentContainerProps = {
   activeJobIds: number[];
   onJobDrop: (jobId: number) => void;
   onAssignEmployee: (employeeId: number, jobId: number) => void;
+  onUpdateJob: (jobId: number, changes: Partial<Job>) => void;
 };
 
 export const AssignmentContainer: React.FC<AssignmentContainerProps> = ({
@@ -17,6 +18,7 @@ export const AssignmentContainer: React.FC<AssignmentContainerProps> = ({
   activeJobIds,
   onJobDrop,
   onAssignEmployee,
+  onUpdateJob,
 }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.JOB,
@@ -58,6 +60,7 @@ export const AssignmentContainer: React.FC<AssignmentContainerProps> = ({
           job={job}
           employees={employees}
           onAssignEmployee={onAssignEmployee}
+          onUpdateJob={onUpdateJob}
         />
       ))}
     </div>

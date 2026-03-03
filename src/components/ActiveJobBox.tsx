@@ -8,12 +8,14 @@ interface ActiveJobBoxProps {
   job: Job;
   employees: Employee[];
   onAssignEmployee: (employeeId: number, jobId: number) => void;
+  onUpdateJob: (jobId: number, changes: Partial<Job>) => void;
 }
 
 export const ActiveJobBox: React.FC<ActiveJobBoxProps> = ({
   job,
   employees,
   onAssignEmployee,
+  onUpdateJob,
 }) => {
   // --- 1. Hook useDrop (Para Empleados) ---
   const [{ isOver: isEmployeeOver }, drop] = useDrop(() => ({
@@ -43,8 +45,25 @@ export const ActiveJobBox: React.FC<ActiveJobBoxProps> = ({
     drop(node);
   };
 
+  const inputContainerStyle: React.CSSProperties = {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "10px",
+    padding: "8px",
+    backgroundColor: "#f8f9fa",
+    borderRadius: "4px",
+    border: "1px solid #dee2e6",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    padding: "4px 8px",
+    borderRadius: "4px",
+    border: "1px solid #ced4da",
+    fontSize: "0.9rem",
+  };
+
   const assignedEmployees = employees.filter((e) =>
-    job.assignedEmployeeIds.includes(e.id)
+    job.assignedEmployeeIds.includes(e.id),
   );
 
   const boxStyle: React.CSSProperties = {
@@ -64,11 +83,56 @@ export const ActiveJobBox: React.FC<ActiveJobBoxProps> = ({
         <span style={{ fontWeight: "bold", fontSize: "25px" }}>
           {job.number} {job.title}
         </span>{" "}
-        <span>{"( " + job.addess + " )"}</span>
+        <span>{"( " + job.address + " )"}</span>
       </div>
       {/* <p style={{ fontSize: "0.9rem", color: "#6c757d" }}>
         Arrastra empleados aquí:
       </p> */}
+
+      {/* --- NUEVA SECCIÓN: Campos Editables --- */}
+      <div
+        style={inputContainerStyle}
+        onMouseDown={(e) => e.stopPropagation()} // BLOQUEA el arrastre al hacer clic aquí
+      >
+        <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+          <label
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+              color: "#495057",
+            }}
+          >
+            Start Hour
+          </label>
+          <input
+            type="time"
+            style={inputStyle}
+            value={job.startTime}
+            onChange={(e) => onUpdateJob(job.id, { startTime: e.target.value })}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", flex: 2 }}>
+          <label
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+              color: "#495057",
+            }}
+          >
+            Comments
+          </label>
+          <input
+            type="text"
+            placeholder="Add notes..."
+            style={inputStyle}
+            value={job.assignmentComment}
+            onChange={(e) =>
+              onUpdateJob(job.id, { assignmentComment: e.target.value })
+            }
+          />
+        </div>
+      </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", minHeight: "40px" }}>
         {assignedEmployees.length === 0 && (

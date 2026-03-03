@@ -25,14 +25,18 @@ export type Job = {
   id: number;
   title: string;
   number: string;
-  addess: string;
+  address: string;
+  startTime: string;
+  assignmentComment: string;
   assignedEmployeeIds: number[];
 };
 
 export type jobApi = {
   jobsId: number;
+  startTime: string;
+  assignmentComment: string;
   assignmentEmployeeDtos: EmployeeData[];
-}
+};
 
 export type JobData = {
   address: string;

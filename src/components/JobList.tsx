@@ -42,6 +42,7 @@ export const JobList: React.FC<JobListProps> = ({
           title={job.title}
           assigned={job.assignedEmployeeIds.length}
           isActive={activeJobIds.includes(job.id)}
+          address={job.address}
         />
       ))}
     </div>

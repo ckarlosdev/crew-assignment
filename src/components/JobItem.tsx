@@ -8,6 +8,7 @@ export interface JobItemProps {
   isActive: boolean;
   assigned: number;
   isDraggingPreview?: boolean;
+  address: string;
 }
 
 export const ItemTypes = {
@@ -21,6 +22,7 @@ export const JobItem: React.FC<JobItemProps> = ({
   assigned,
   isActive,
   isDraggingPreview,
+  address,
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.JOB,
@@ -54,13 +56,13 @@ export const JobItem: React.FC<JobItemProps> = ({
     <div
       ref={dragRef}
       style={itemStyle}
-      title={number && title ? undefined : "Datos no listos"}
+      title={number && title ? undefined : "No data ready."}
     >
       <span style={{ fontWeight: "bold" }}>
-        #{number ?? "..."}{" "}
-        {title ?? "..."}
+        #{number ?? "..."} {title ?? "..."}
       </span>{" "}
-      ({assigned ?? "..."})
+      ({assigned ?? "..."}){" "}
+      <span style={{ fontWeight: "normal" }}>"{address}"</span>
     </div>
   );
 };

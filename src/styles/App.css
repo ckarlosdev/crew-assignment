@@ -3,24 +3,33 @@
   /* Define los estilos de escritorio como base */
   display: flex;
   justify-content: space-around;
+  align-items: flex-start;
   gap: 15px;
-  padding: 20px;
+  padding: 0 20px;
 }
 
 .job-list-container {
   width: 25%;
-  max-height: 80vh; 
-  overflow-y: auto; 
-  padding-right: 5px; 
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 5px;
+
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
 }
 .assignment-container-main {
   width: 85%;
 }
 .employee-list-container {
   width: 25%;
-  max-height: 80vh; 
-  overflow-y: auto; 
-  padding-right: 5px; 
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 5px;
+
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
 }
 
 /* 2. Media Query para Móviles (Menos de 600px) */

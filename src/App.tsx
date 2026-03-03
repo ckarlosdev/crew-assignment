@@ -24,7 +24,7 @@ import {
   searchJobstsURL,
   submitAssignmentURL,
 } from "./hooks/urls";
-import { Button, Card, ListGroup, Modal } from "react-bootstrap";
+import { Button, Card, Form, ListGroup, Modal, Spinner } from "react-bootstrap";
 
 const getTodayDateString = (): string => {
   const today = new Date();
@@ -59,6 +59,7 @@ function App() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [employeesDetail, setEmployeesDetail] = useState<EmployeeData[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   // const [jobNumbers, setJobNumbers] = useState(10);
@@ -106,8 +107,27 @@ function App() {
     });
   };
 
+  const filteredJobsData = useMemo(() => {
+    if (!jobs) return [];
+
+    let result = [...jobs];
+
+    if (searchTerm) {
+      const lowSearch = searchTerm.toLowerCase();
+      result = result.filter((job) => {
+        return (
+          job.number?.toLowerCase().includes(lowSearch) ||
+          job.title?.toLowerCase().includes(lowSearch) ||
+          job.address?.toLowerCase().includes(lowSearch)
+        );
+      });
+    }
+
+    return result;
+  }, [jobs, searchTerm]);
+
   const [activeJobIds, setActiveJobIds] = useState<number[]>([]);
-  const { postData: submitAssignment, putData: updateAssignment } =
+  const { postData: submitAssignment, putData: updateAssignment, loading } =
     useHttpsData<Assignment>();
 
   const { data: jobsData, search: searchJobs } = useHttpsData<JobData[]>();
@@ -139,14 +159,16 @@ function App() {
 
   const filteredJobs = useMemo(() => {
     const sortedDescending = [...jobsDetail].sort(
-      (a, b) => b.jobsId - a.jobsId
+      (a, b) => b.jobsId - a.jobsId,
     );
     // const lastNJobs = sortedDescending.slice(0, jobNumbers);
     const transformedJobs: Job[] = sortedDescending.map((data) => ({
       id: data.jobsId, // Map jobsId to the required id field
       title: data.name, // Map name (or another field) to title
       number: data.number,
-      addess: data.address,
+      address: data.address,
+      startTime: "07:00",
+      assignmentComment: "",
       assignedEmployeeIds: [], // Initialize the assignment array as empty
     }));
 
@@ -159,20 +181,10 @@ function App() {
   }, [filteredJobs]);
 
   const filteredEmployees = useMemo(() => {
-    // const sortedDescending = [...employeesDetail].sort((a, b) =>
-    //   a.firstName.localeCompare(b.firstName)
-    // );
-
-    // const filteredEmployees = [...sortedDescending].filter(
-    //   (employee) =>
-    //     (employee.title === "Labor" || employee.title === "Supervisor") &&
-    //     employee.status != "Terminated"
-    // );
-
     const eligibleEmployees = employeesDetail.filter(
       (employee) =>
         (employee.title === "Labor" || employee.title === "Supervisor") &&
-        employee.status !== "Terminated"
+        employee.status !== "Terminated",
     );
 
     // 2. Aplicar el orden personalizado con un Custom Comparator
@@ -249,7 +261,7 @@ function App() {
   useEffect(() => {
     if (assignmentsData) {
       const sortedDescending = [...assignmentsData].sort(
-        (a, b) => b.assignmentsId - a.assignmentsId
+        (a, b) => b.assignmentsId - a.assignmentsId,
       );
       setAssignments(sortedDescending);
     }
@@ -267,7 +279,7 @@ function App() {
 
         const updatedJobs = jobs.map((appJob) => {
           const loadedJobDto = assignData.assignmentJobDtos.find(
-            (dto) => dto.jobsId === appJob.id
+            (dto) => dto.jobsId === appJob.id,
           );
           if (loadedJobDto) {
             newJobIds.push(appJob.id);
@@ -277,10 +289,17 @@ function App() {
             return {
               ...appJob,
               assignedEmployeeIds: assignedIds || [],
+              startTime: loadedJobDto.startTime || "",
+              assignmentComment: loadedJobDto.assignmentComment || "",
             } as Job;
           }
           if (appJob.assignedEmployeeIds.length > 0) {
-            return { ...appJob, assignedEmployeeIds: [] } as Job;
+            return {
+              ...appJob,
+              assignedEmployeeIds: [],
+              startTime: "07:00",
+              assignmentComment: "",
+            } as Job;
           }
           return appJob;
         });
@@ -374,49 +393,19 @@ function App() {
       setActiveJobIds((prevIds) => prevIds?.filter((id) => id !== jobId));
     },
     // 💡 DEPENDENCIAS ACTUALIZADAS: 'jobs' ya no es necesario aquí
-    [setEmployees, setJobs, setActiveJobIds]
+    [setEmployees, setJobs, setActiveJobIds],
   );
 
-  // Esta función se pasará a AssignmentContainer
-  // const handleAssignEmployee = useCallback(
-  //   (employeeId: number, jobId: number) => {
-  //     // --- 1. ACTUALIZAR EL ESTADO DEL JOB (Añadir el Empleado) ---
-  //     setJobs((prevJobs) => {
-  //       return prevJobs.map((job) => {
-  //         // Si encontramos el job que recibió la asignación
-  //         if (job.id === jobId) {
-  //           // Evitar duplicados: solo agregamos si el ID NO está ya en la lista
-  //           if (!job.assignedEmployeeIds.includes(employeeId)) {
-  //             return {
-  //               ...job,
-  //               // Crear un nuevo array con el nuevo empleado
-  //               assignedEmployeeIds: [...job.assignedEmployeeIds, employeeId],
-  //             };
-  //           }
-  //         }
-  //         // Devolver el job sin cambios si no es el objetivo o si ya estaba asignado
-  //         return job;
-  //       });
-  //     });
-
-  //     // --- 2. ACTUALIZAR EL ESTADO DEL EMPLOYEE (Cambiar el Status) ---
-  //     setEmployees((prevEmployees) => {
-  //       return prevEmployees.map((employee) => {
-  //         // Si encontramos el empleado que fue asignado
-  //         if (employee.id === employeeId) {
-  //           return {
-  //             ...employee,
-  //             // Cambiar su estado a 'assigned'
-  //             status: "assigned",
-  //           };
-  //         }
-  //         // Devolver el empleado sin cambios
-  //         return employee;
-  //       });
-  //     });
-  //   },
-  //   []
-  // );
+  const handleUpdateJob = useCallback(
+    (jobId: number, changes: Partial<Job>) => {
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.id === jobId ? { ...job, ...changes } : job,
+        ),
+      );
+    },
+    [],
+  );
 
   const handleAssignEmployee = useCallback(
     (employeeId: number, jobId: number) => {
@@ -426,7 +415,7 @@ function App() {
             return {
               ...job,
               assignedEmployeeIds: job.assignedEmployeeIds.filter(
-                (id) => id !== employeeId
+                (id) => id !== employeeId,
               ),
             };
           }
@@ -455,7 +444,7 @@ function App() {
         });
       });
     },
-    []
+    [],
   );
 
   // Esta función se pasará a EmployeeList (como DropTarget)
@@ -469,7 +458,7 @@ function App() {
             ...job,
             // Filtramos y removemos el ID del empleado del array
             assignedEmployeeIds: job.assignedEmployeeIds.filter(
-              (id) => id !== employeeId
+              (id) => id !== employeeId,
             ),
           };
         }
@@ -505,7 +494,7 @@ function App() {
     if (activeJobIds && activeJobIds.length > 0) {
       const jobslist = jobs.filter((job) => activeJobIds.includes(job.id));
       const allHaveEmployees = jobslist.every(
-        (job) => job.assignedEmployeeIds && job.assignedEmployeeIds.length > 0
+        (job) => job.assignedEmployeeIds && job.assignedEmployeeIds.length > 0,
       );
 
       if (allHaveEmployees) {
@@ -544,14 +533,15 @@ function App() {
     }
   };
 
-  const phoneNumber = "+523321543415";
-  const messageText =
-    "¡Hello! Please review the jobs assignment: https://ckarlosdev.github.io/assignment-labor-view/?assigmentsId=" +
-    { assignmentId };
+  // const phoneNumber = "+523321543415";
+
+  const fullUrl = `https://ckarlosdev.github.io/assignment-labor-view/?assigmentsId=${assignmentId}`;
+  const messageText = `¡Hello! Please review the jobs assignment: (${fullUrl})`;
 
   const handleSendSms = () => {
     const encodedMessage = encodeURIComponent(messageText);
-    const smsLink = `sms:${phoneNumber}?body=${encodedMessage}`;
+    // const smsLink = `sms:${phoneNumber.phone}?body=${encodedMessage}`;
+    const smsLink = `sms:?body=${encodedMessage}`;
     window.location.href = smsLink;
   };
 
@@ -599,6 +589,22 @@ function App() {
             disabled={!startDate}
           />
         </div>
+        <div style={{ textAlign: "center", marginBottom: "10px" }}>
+          <button
+            style={{
+              width: "200px",
+              height: "40px",
+              marginBottom: "10px",
+              fontWeight: "bold",
+              fontSize: "18px",
+              borderRadius: "10px",
+            }}
+            onClick={handleSendSms}
+            disabled={assignmentId === 0 ? true : false}
+          >
+            Send SMS
+          </button>
+        </div>
         <CustomDragLayer />
         <div className="app-main-layout">
           <div className="job-list-container">
@@ -612,8 +618,17 @@ function App() {
             >
               <h2 style={{ textAlign: "center" }}>Jobs</h2>
             </div>
+            <div className="mb-2">
+              <Form.Control
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             <JobList
-              jobs={jobs}
+              // jobs={jobs}
+              jobs={filteredJobsData}
               activeJobIds={activeJobIds}
               onJobDeactivation={handleJobDeactivation}
             />
@@ -624,9 +639,7 @@ function App() {
               style={{
                 display: "flex",
                 flexDirection: "row",
-                // justifyContent: "center",
                 justifyContent: "space-between",
-                // alignContent: "center",
                 alignItems: "center",
                 width: "100%",
                 padding: "0 20px",
@@ -636,9 +649,6 @@ function App() {
                 style={{
                   width: "100px",
                   height: "40px",
-                  // marginLeft: "auto",
-                  // marginRight: "20px",
-                  // marginTop: "15px",
                   marginBottom: "10px",
                   fontWeight: "bold",
                   fontSize: "18px",
@@ -647,19 +657,6 @@ function App() {
                 onClick={handleShow}
               >
                 List
-              </button>
-              <button
-                style={{
-                  width: "100px",
-                  height: "40px",
-                  marginBottom: "10px",
-                  fontWeight: "bold",
-                  fontSize: "18px",
-                  borderRadius: "10px",
-                }}
-                onClick={handleSendSms}
-              >
-                SMS
               </button>
               <h2 style={{ textAlign: "center", margin: "0" }}>
                 Assignment Zone
@@ -687,6 +684,7 @@ function App() {
               activeJobIds={activeJobIds}
               onJobDrop={handleJobActivation}
               onAssignEmployee={handleAssignEmployee}
+              onUpdateJob={handleUpdateJob}
             />
           </div>
 
@@ -699,6 +697,31 @@ function App() {
           </div>
         </div>
       </DndProvider>
+
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
+            zIndex: 9999,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Spinner
+            animation="border"
+            variant="primary"
+            style={{ width: "4rem", height: "4rem" }}
+          />
+          <h4 className="mt-3">Saving Report...</h4>
+        </div>
+      )}
 
       <Modal
         show={show}
