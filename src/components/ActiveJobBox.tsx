@@ -2,13 +2,14 @@ import React from "react";
 import { useDrop, useDrag } from "react-dnd"; // <-- Importamos useDrag
 import { EmployeeItem, ItemTypes as EmployeeItemTypes } from "./EmployeeItem";
 import { ItemTypes as JobItemTypes } from "./JobItem"; // <-- Importamos los tipos de Job
-import { Employee, Job } from "../types";
+import { Employee, Job, type Hours } from "../types";
 
 interface ActiveJobBoxProps {
   job: Job;
   employees: Employee[];
   onAssignEmployee: (employeeId: number, jobId: number) => void;
   onUpdateJob: (jobId: number, changes: Partial<Job>) => void;
+  empHours: Hours[];
 }
 
 export const ActiveJobBox: React.FC<ActiveJobBoxProps> = ({
@@ -16,6 +17,7 @@ export const ActiveJobBox: React.FC<ActiveJobBoxProps> = ({
   employees,
   onAssignEmployee,
   onUpdateJob,
+  empHours,
 }) => {
   // --- 1. Hook useDrop (Para Empleados) ---
   const [{ isOver: isEmployeeOver }, drop] = useDrop(() => ({
@@ -138,15 +140,20 @@ export const ActiveJobBox: React.FC<ActiveJobBoxProps> = ({
         {assignedEmployees.length === 0 && (
           <span style={{ color: "red" }}>No employee assigned.</span>
         )}
-        {assignedEmployees.map((employee) => (
-          // 5. CLAVE: Renderizar EmployeeItem para que cada empleado sea arrastrable hacia la zona de desasignación
-          <EmployeeItem
-            key={employee.id}
-            id={employee.id}
-            name={employee.name}
-            title={employee.title}
-          />
-        ))}
+        {assignedEmployees.map((employee) => {
+          const hrs = empHours?.find?.((eh) => eh.employeesId === employee.id);
+
+          return (
+            <EmployeeItem
+              key={employee.id}
+              id={employee.id}
+              name={employee.name}
+              title={employee.title}
+              isAssigned={false}
+              hrs={hrs}
+            />
+          );
+        })}
       </div>
     </div>
   );

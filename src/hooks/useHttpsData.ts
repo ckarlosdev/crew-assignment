@@ -29,7 +29,7 @@ export default <T>(url?: string) => {
       })
       .catch((e) => {
         if (!aborted) {
-          console.log(e);
+          // console.log(e);
           setError(e);
           setData(undefined);
         }
@@ -61,7 +61,7 @@ export default <T>(url?: string) => {
 
   const postData = async (
     url: string,
-    payload: any
+    payload: any,
   ): Promise<T | undefined> => {
     setLoading(true);
     setError(null);

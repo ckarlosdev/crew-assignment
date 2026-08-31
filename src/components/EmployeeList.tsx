@@ -1,17 +1,19 @@
 import React from "react";
 import { useDrop } from "react-dnd";
 import { EmployeeItem, ItemTypes } from "./EmployeeItem"; // Crea este archivo
-import { Employee } from "../types";
+import { Employee, type Hours } from "../types";
 
 interface EmployeeListProps {
   employees: Employee[];
   onUnassignEmployee: (employeeId: number) => void;
+  empHours: Hours[];
 }
 
 // Zona de empleados disponibles: DropTarget para desasignar
 export const EmployeeList: React.FC<EmployeeListProps> = ({
   employees,
   onUnassignEmployee,
+  empHours,
 }) => {
   // 1. Hook useDrop para convertir toda la lista en una zona de desasignación
   const [{ isOver }, drop] = useDrop(() => ({
@@ -40,22 +42,26 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
       }}
     >
       {availableEmployees.length === 0 && (
-        <p style={{ color: "gray" }}>
-          No hay empleados disponibles para arrastrar.
-        </p>
+        <p style={{ color: "gray" }}>No employees to drag.</p>
       )}
-      {availableEmployees.map((employee) => (
-        // 3. Renderizamos los ítems arrastrables
-        <EmployeeItem
-          key={employee.id}
-          id={employee.id}
-          name={employee.name}
-          title={employee.title}
-        />
-      ))}
+      {availableEmployees.map((employee) => {
+        
+        const hrs = empHours?.find?.((eh) => eh.employeesId === employee.id);
+
+        return (
+          <EmployeeItem
+            key={employee.id}
+            id={employee.id}
+            name={employee.name}
+            title={employee.title}
+            isAssigned={true}
+            hrs={hrs}
+          />
+        );
+      })}
       {isOver && (
         <div style={{ textAlign: "center", color: "orange" }}>
-          SUELTA para DESASIGNAR
+          Release to assign
         </div>
       )}
     </div>

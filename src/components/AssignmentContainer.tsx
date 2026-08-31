@@ -1,5 +1,5 @@
 import { useDrop } from "react-dnd";
-import { Employee, Job } from "../types";
+import { Employee, Job, type Hours } from "../types";
 import { ItemTypes } from "./JobItem";
 import { ActiveJobBox } from "./ActiveJobBox";
 
@@ -10,6 +10,7 @@ type AssignmentContainerProps = {
   onJobDrop: (jobId: number) => void;
   onAssignEmployee: (employeeId: number, jobId: number) => void;
   onUpdateJob: (jobId: number, changes: Partial<Job>) => void;
+  empHours: Hours[];
 };
 
 export const AssignmentContainer: React.FC<AssignmentContainerProps> = ({
@@ -19,6 +20,7 @@ export const AssignmentContainer: React.FC<AssignmentContainerProps> = ({
   onJobDrop,
   onAssignEmployee,
   onUpdateJob,
+  empHours,
 }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ItemTypes.JOB,
@@ -61,6 +63,7 @@ export const AssignmentContainer: React.FC<AssignmentContainerProps> = ({
           employees={employees}
           onAssignEmployee={onAssignEmployee}
           onUpdateJob={onUpdateJob}
+          empHours={empHours ?? []}
         />
       ))}
     </div>

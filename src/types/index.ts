@@ -4,6 +4,7 @@ export type Assignment = {
   startDate: string;
   endDate: string;
   assignmentJobCreateDtoList: number[];
+  absenceCreateDtoList: Absence[];
 };
 
 export type Assign = {
@@ -12,6 +13,7 @@ export type Assign = {
   startDate: string;
   endDate: string;
   assignmentJobDtos: jobApi[];
+  absences: Absence[];
 };
 
 export type Employee = {
@@ -56,4 +58,18 @@ export type EmployeeData = {
   lastName: string;
   status: string;
   title: string;
+};
+
+export type Absence = {
+  temporalId: string;
+  assignmentsAbsencesId: number | null;
+  employeesId: number | null;
+  absenceType: string;
+  comments: string;
+};
+
+export type Hours = {
+  name: string;
+  employeesId: number;
+  totalHrs: number;
 };

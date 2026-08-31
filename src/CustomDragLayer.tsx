@@ -45,6 +45,8 @@ export const CustomDragLayer: React.FC = () => {
           name={draggedItem.name}
           isDraggingPreview={true}
           title={draggedItem.title}
+          isAssigned={true}
+          hrs={undefined}
         />
       );
     }

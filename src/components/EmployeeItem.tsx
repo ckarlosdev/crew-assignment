@@ -1,11 +1,16 @@
 import React from "react";
+import { Button } from "react-bootstrap";
 import { useDrag } from "react-dnd";
+import { useAbsenceStore } from "../store/useAbsenceStore";
+import type { Hours } from "../types";
 
 interface EmployeeItemProps {
   id: number;
   name: string;
   title: string;
   isDraggingPreview?: boolean;
+  isAssigned: boolean;
+  hrs: Hours | undefined;
 }
 
 // Define el tipo de elemento arrastrable.
@@ -18,7 +23,11 @@ export const EmployeeItem: React.FC<EmployeeItemProps> = ({
   name,
   title,
   isDraggingPreview,
+  isAssigned,
+  hrs,
 }) => {
+  const { setShowModal, setEmployeeIdSelected, setEmployeeNameSelected } =
+    useAbsenceStore();
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.EMPLOYEE,
     item: { id, name }, // Solo necesitamos pasar el ID
@@ -28,7 +37,6 @@ export const EmployeeItem: React.FC<EmployeeItemProps> = ({
   }));
 
   const itemStyle: React.CSSProperties = {
-    padding: "8px",
     marginBottom: isDraggingPreview ? 0 : "8px",
     cursor: isDraggingPreview ? "default" : "move",
     backgroundColor: "#d1e7dd",
@@ -40,6 +48,17 @@ export const EmployeeItem: React.FC<EmployeeItemProps> = ({
     MozUserSelect: "none",
     msUserSelect: "none",
     // width: "250px",
+    display: "flex",
+    alignItems: "center", // Centra verticalmente el botón y el texto
+    justifyContent: "space-between", // Alinea todo al principio (izquierda)
+    padding: "0 10px", // Un poco de aire en los bordes
+    // width: "100%",
+  };
+
+  const handleAbsence = () => {
+    setShowModal(true);
+    setEmployeeIdSelected(id);
+    setEmployeeNameSelected(name);
   };
 
   const dragRef = isDraggingPreview ? undefined : drag;
@@ -47,16 +66,43 @@ export const EmployeeItem: React.FC<EmployeeItemProps> = ({
   return (
     // Asigna el ref 'drag' al elemento DOM
     <div ref={dragRef} style={itemStyle}>
-      <span style={{ fontWeight: title === "Supervisor" ? "bold" : "normal" }}>
+      <span
+        style={{
+          fontWeight: title === "Supervisor" ? "bold" : "normal",
+          whiteSpace: "nowrap", // Evita que el nombre salte de línea
+          overflow: "hidden", // Corta el texto si es muy largo
+          textOverflow: "ellipsis", // Agrega los "..."
+          flexShrink: 1, // Permite que el nombre se encoja si falta espacio
+          fontSize: "14px",
+        }}
+      >
         {name}
+        {" - "}
+        {hrs?.totalHrs ?? "0"}{" hrs"}
       </span>
-      {title === "Supervisor" ? (
-        <>
-          {" ("}
-          <span style={{ fontWeight: "bold" }}>{title}</span>
-          {")"}
-        </>
-      ) : null}
+      {isAssigned && !isDraggingPreview && (
+        <Button
+          variant="outline-danger"
+          style={{
+            fontWeight: "bold",
+            minWidth: "45px",
+            height: "20px",
+            fontSize: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0",
+            marginLeft: "auto",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleAbsence();
+          }}
+        >
+          ABSENCE
+        </Button>
+      )}
     </div>
   );
 };
